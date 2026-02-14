@@ -5,29 +5,6 @@ import { Text, TouchableOpacity, View } from "react-native";
 const PrayerStatus = () => {
   return (
     <View className="p-5 mb-6">
-      {/* Header: Hijri Date and Location */}
-      <View className="flex-row justify-between items-start mb-6">
-        <View className="flex-row items-center">
-          <MaterialCommunityIcons
-            name="calendar-month-outline"
-            size={26}
-            color="#1E293B"
-          />
-          <View className="ml-3">
-            <Text className="text-gray-800 font-semibold text-sm">
-              Sha'ban 13, 1447
-            </Text>
-            <Text className="text-gray-500 text-xs">February 1, 2026</Text>
-          </View>
-        </View>
-
-        <View className="items-end">
-          <Text className="text-gray-800 font-bold text-[10px] tracking-widest uppercase">
-            Wah, Punjab, Pakistan
-          </Text>
-        </View>
-      </View>
-
       {/* Main Content */}
       <View className="flex-row justify-between items-center">
         {/* Prayer Info */}
