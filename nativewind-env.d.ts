@@ -1,3 +1,3 @@
-nativewind - env.d.ts;
+//nativewind-env.d.ts
 
 /// <reference types="nativewind/types" />
