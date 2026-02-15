@@ -1,8 +1,8 @@
 import { LocationContext } from "@/context/LocationContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Magnetometer } from "expo-sensors";
-import React, { useContext, useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { Animated, Easing, Text, View } from "react-native";
 
 const QiblaScreen = () => {
   const { location, city } = useContext(LocationContext);
@@ -10,15 +10,17 @@ const QiblaScreen = () => {
   const [heading, setHeading] = useState(0);
   const [qiblaDirection, setQiblaDirection] = useState(0);
 
-  // 🔄 Convert magnetometer values to heading (0 - 360)
+  const animatedHeading = useRef(new Animated.Value(0)).current;
+  const animatedQibla = useRef(new Animated.Value(0)).current;
+
+  // Convert magnetometer data to heading
   const calculateHeading = (data: any) => {
     let angle = Math.atan2(data.y, data.x);
     angle = angle * (180 / Math.PI);
-    angle = angle >= 0 ? angle : angle + 360;
-    return angle;
+    return angle >= 0 ? angle : angle + 360;
   };
 
-  // 🕋 Calculate Qibla direction
+  // Calculate Qibla Direction
   const getQiblaDirection = (lat: number, lng: number) => {
     const kaabaLat = 21.4225 * (Math.PI / 180);
     const kaabaLng = 39.8262 * (Math.PI / 180);
@@ -37,19 +39,30 @@ const QiblaScreen = () => {
     return (direction + 360) % 360;
   };
 
-  // 📡 Listen to Magnetometer
+  // Smooth animate heading
+  const animateTo = (animatedValue: Animated.Value, toValue: number) => {
+    Animated.timing(animatedValue, {
+      toValue,
+      duration: 200,
+      easing: Easing.linear,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  // Magnetometer listener
   useEffect(() => {
     Magnetometer.setUpdateInterval(100);
 
     const subscription = Magnetometer.addListener((data) => {
       const angle = calculateHeading(data);
       setHeading(angle);
+      animateTo(animatedHeading, angle);
     });
 
     return () => subscription.remove();
   }, []);
 
-  // 📍 Calculate Qibla once location available
+  // Qibla calculation
   useEffect(() => {
     if (location) {
       const direction = getQiblaDirection(
@@ -57,11 +70,22 @@ const QiblaScreen = () => {
         location.longitude,
       );
       setQiblaDirection(direction);
+      animateTo(animatedQibla, direction);
     }
   }, [location]);
 
-  // 🎯 Final rotation (IMPORTANT FIX)
-  const rotation = (qiblaDirection - heading + 360) % 360;
+  const dialRotation = animatedHeading.interpolate({
+    inputRange: [0, 360],
+    outputRange: ["0deg", "360deg"],
+  });
+
+  const needleRotation = Animated.subtract(
+    animatedQibla,
+    animatedHeading,
+  ).interpolate({
+    inputRange: [-360, 360],
+    outputRange: ["-360deg", "360deg"],
+  });
 
   return (
     <View className="flex-1 bg-[#0F172A] items-center pt-12">
@@ -74,10 +98,10 @@ const QiblaScreen = () => {
 
       {/* Compass */}
       <View className="relative items-center justify-center w-80 h-80">
-        {/* Compass Dial (ROTATES WITH PHONE) */}
-        <View
+        {/* Rotating Dial */}
+        <Animated.View
           className="absolute w-full h-full border border-slate-700/40 rounded-full items-center justify-center"
-          style={{ transform: [{ rotate: `${-heading}deg` }] }}
+          style={{ transform: [{ rotate: dialRotation }] }}
         >
           <Text className="absolute top-3 text-white font-bold text-lg">N</Text>
           <Text className="absolute bottom-3 text-white font-bold text-lg">
@@ -99,25 +123,25 @@ const QiblaScreen = () => {
               }}
             />
           ))}
-        </View>
+        </Animated.View>
 
-        {/* Qibla Arrow (POINTS TO KAABA) */}
-        <View
+        {/* Animated Qibla Needle */}
+        <Animated.View
           className="items-center justify-center"
-          style={{ transform: [{ rotate: `${rotation}deg` }] }}
+          style={{ transform: [{ rotate: needleRotation }] }}
         >
           <View className="w-1.5 h-32 bg-white rounded-full opacity-80" />
 
           <View className="absolute bg-[#93C5FD] p-4 rounded-full shadow-2xl">
             <MaterialCommunityIcons name="kaaba" size={40} color="#0F172A" />
           </View>
-        </View>
+        </Animated.View>
       </View>
 
       {/* Info */}
       <View className="mt-16 items-center">
         <Text className="text-slate-400 text-xs uppercase tracking-widest">
-          Rotate your phone to find Qibla
+          Rotate your phone smoothly to align with Qibla
         </Text>
       </View>
     </View>
