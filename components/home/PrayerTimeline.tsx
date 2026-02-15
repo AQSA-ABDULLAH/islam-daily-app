@@ -1,3 +1,4 @@
+import { timeToMinutes, to12HourFormat } from "@/context/helper";
 import { LocationContext } from "@/context/LocationContext";
 import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
@@ -7,7 +8,7 @@ import { Text, View } from "react-native";
 interface Prayer {
   name: string;
   time: string;
-  isActive?: boolean; // optional, to highlight current prayer
+  isActive?: boolean;
 }
 
 // Typing the API response from Aladhan
@@ -26,12 +27,6 @@ interface TimingsResponse {
 const PrayerTimeline: React.FC = () => {
   const { location } = useContext(LocationContext);
   const [prayers, setPrayers] = useState<Prayer[]>([]);
-
-  // Helper: Convert time string "HH:MM" to minutes for comparison
-  const timeToMinutes = (time: string) => {
-    const [hours, minutes] = time.split(":").map(Number);
-    return hours * 60 + minutes;
-  };
 
   useEffect(() => {
     if (!location) return;
@@ -60,21 +55,29 @@ const PrayerTimeline: React.FC = () => {
           { name: "Isha", time: timings.Isha },
         ];
 
-        // Determine current active prayer
         const now = new Date();
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
+        // Determine active prayer and format time
         const updatedPrayers = todayPrayers.map((p, i) => {
-          const prayerMinutes = timeToMinutes(p.time.split(" ")[0]); // ignore AM/PM for now
-          // Simple logic: active if next prayer is after current time
+          const prayerMinutes = timeToMinutes(p.time.split(" ")[0]);
+
+          const nextPrayerIndex = todayPrayers.findIndex((pr) => {
+            const prMinutes = timeToMinutes(pr.time.split(" ")[0]);
+            return prMinutes > currentMinutes;
+          });
+
           const isActive =
             i ===
-            todayPrayers.findIndex((pr) => {
-              const prMinutes = timeToMinutes(pr.time.split(" ")[0]);
-              return prMinutes > currentMinutes;
-            }) -
-              1;
-          return { ...p, isActive: !!isActive };
+            (nextPrayerIndex === -1
+              ? todayPrayers.length - 1
+              : nextPrayerIndex - 1);
+
+          return {
+            ...p,
+            isActive,
+            time: to12HourFormat(p.time.split(" ")[0]),
+          };
         });
 
         setPrayers(updatedPrayers);

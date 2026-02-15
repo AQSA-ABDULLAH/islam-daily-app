@@ -1,8 +1,8 @@
+import { LocationContext } from "@/context/LocationContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { CalculationMethod, Coordinates, PrayerTimes } from "adhan";
 import React, { useContext, useEffect, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
-import { LocationContext } from "../../context/LocationContext"; // adjust path
 
 const prayerOrder = ["fajr", "dhuhr", "asr", "maghrib", "isha"] as const;
 type PrayerName = (typeof prayerOrder)[number];
