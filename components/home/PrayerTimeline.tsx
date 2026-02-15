@@ -60,7 +60,7 @@ const PrayerTimeline: React.FC = () => {
 
         // Determine active prayer and format time
         const updatedPrayers = todayPrayers.map((p, i) => {
-          const prayerMinutes = timeToMinutes(p.time.split(" ")[0]);
+          // const prayerMinutes = timeToMinutes(p.time.split(" ")[0]);
 
           const nextPrayerIndex = todayPrayers.findIndex((pr) => {
             const prMinutes = timeToMinutes(pr.time.split(" ")[0]);
