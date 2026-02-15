@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import DuaCard from "@/components/home/DuaCard";
 import FastingCard from "@/components/home/FastingCard";
-import FeaturesGrid from "@/components/home/FeaturesGrid";
+// import FeaturesGrid from "@/components/home/FeaturesGrid";
 import Header from "@/components/home/Header";
 import PrayerStatus from "@/components/home/PrayerStatus";
 import PrayerTimeline from "@/components/home/PrayerTimeline";
@@ -17,7 +17,7 @@ export default function HomeScreen() {
         <PrayerStatus />
         <FastingCard />
         <PrayerTimeline />
-        <FeaturesGrid />
+        {/* <FeaturesGrid /> */}
         <DuaCard />
       </ScrollView>
     </SafeAreaView>
