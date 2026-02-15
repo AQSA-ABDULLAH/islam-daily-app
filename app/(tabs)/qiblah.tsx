@@ -1,8 +1,7 @@
 import { LocationContext } from "@/context/LocationContext";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Magnetometer } from "expo-sensors";
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { Animated, Easing, Text, View } from "react-native";
+import { Animated, Easing, Image, Text, View } from "react-native";
 
 const QiblaScreen = () => {
   const { location, city } = useContext(LocationContext);
@@ -126,8 +125,12 @@ const QiblaScreen = () => {
         >
           <View className="w-1.5 h-32 bg-black rounded-full opacity-80" />
 
-          <View className="absolute bg-[#93C5FD] p-4 rounded-full shadow-2xl">
-            <MaterialCommunityIcons name="kaaba" size={40} color="#0F172A" />
+          <View className="absolute p-2 rounded-full shadow-2xl bg-[#93C5FD]">
+            <Image
+              source={require("../../assets/qiblah/qiblah-icon.png")}
+              style={{ width: 40, height: 40 }}
+              resizeMode="contain"
+            />
           </View>
         </Animated.View>
       </View>
