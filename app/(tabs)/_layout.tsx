@@ -2,9 +2,15 @@ import { Tabs } from "expo-router";
 import React from "react";
 
 import { HapticTab } from "@/components/haptic-tab";
-import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+
+import PrayerIcon from "../../assets/tabs/calendar-clock.svg";
+import CompassIcon from "../../assets/tabs/compass.svg";
+import DuaIcon from "../../assets/tabs/hand-helping.svg";
+// import HomeIcon from "../../assets/tabs/house.svg";
+import { IconSymbol } from "@/components/ui/icon-symbol";
+import SettingsIcon from "../../assets/tabs/settings.svg";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -18,6 +24,26 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
+        name="qiblah"
+        options={{
+          title: "Qiblah",
+          tabBarIcon: ({ color }) => (
+            <CompassIcon width={28} height={28} fill={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="prayer"
+        options={{
+          title: "Prayer",
+          tabBarIcon: ({ color }) => (
+            <PrayerIcon width={28} height={28} fill={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
         name="index"
         options={{
           title: "Home",
@@ -26,12 +52,23 @@ export default function TabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
-        name="explore"
+        name="dua"
         options={{
-          title: "Second_Tab",
+          title: "Dua",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
+            <DuaIcon width={28} height={28} fill={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: "Settings",
+          tabBarIcon: ({ color }) => (
+            <SettingsIcon width={28} height={28} fill={color} />
           ),
         }}
       />

@@ -3,7 +3,7 @@ import { Magnetometer } from "expo-sensors";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Animated, Easing, Image, Text, View } from "react-native";
 
-const QiblaScreen = () => {
+const QiblahScreen = () => {
   const { location, city } = useContext(LocationContext);
 
   const [heading, setHeading] = useState(0);
@@ -145,4 +145,4 @@ const QiblaScreen = () => {
   );
 };
 
-export default QiblaScreen;
+export default QiblahScreen;
