@@ -88,10 +88,10 @@ const QiblaScreen = () => {
   });
 
   return (
-    <View className="flex-1 bg-[#0F172A] items-center pt-12">
+    <View className="flex-1 items-center pt-12">
       {/* Location */}
-      <View className="bg-[#1E293B] px-6 py-3 rounded-2xl mb-16 shadow-lg">
-        <Text className="text-gray-300 text-[12px] font-medium tracking-wide">
+      <View className="bg-[#1E293B] text-white px-6 py-3 rounded-2xl mb-16 shadow-lg">
+        <Text className="text-[12px] font-medium tracking-wide">
           {city || "Detecting location..."}
         </Text>
       </View>
@@ -103,16 +103,10 @@ const QiblaScreen = () => {
           className="absolute w-full h-full border border-slate-700/40 rounded-full items-center justify-center"
           style={{ transform: [{ rotate: dialRotation }] }}
         >
-          <Text className="absolute top-3 text-white font-bold text-lg">N</Text>
-          <Text className="absolute bottom-3 text-white font-bold text-lg">
-            S
-          </Text>
-          <Text className="absolute left-3 text-white font-bold text-lg">
-            W
-          </Text>
-          <Text className="absolute right-3 text-white font-bold text-lg">
-            E
-          </Text>
+          <Text className="absolute top-3 font-bold text-lg">N</Text>
+          <Text className="absolute bottom-3 font-bold text-lg">S</Text>
+          <Text className="absolute left-3 font-bold text-lg">W</Text>
+          <Text className="absolute right-3 font-bold text-lg">E</Text>
 
           {[...Array(12)].map((_, i) => (
             <View
@@ -130,7 +124,7 @@ const QiblaScreen = () => {
           className="items-center justify-center"
           style={{ transform: [{ rotate: needleRotation }] }}
         >
-          <View className="w-1.5 h-32 bg-white rounded-full opacity-80" />
+          <View className="w-1.5 h-32 bg-black rounded-full opacity-80" />
 
           <View className="absolute bg-[#93C5FD] p-4 rounded-full shadow-2xl">
             <MaterialCommunityIcons name="kaaba" size={40} color="#0F172A" />
