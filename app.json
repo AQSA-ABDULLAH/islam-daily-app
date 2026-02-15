@@ -41,6 +41,12 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Islam Daily App to access your location for prayer times and Qibla direction."
+        }
       ]
     ],
     "experiments": {
