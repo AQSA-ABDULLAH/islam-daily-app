@@ -47,7 +47,7 @@ export default function PrayerScreen() {
 
         <View className="items-center">
           <Text className="text-white font-bold">16 Feb, 2026</Text>
-          <Text className="text-[#aaa] text-xs">28 Sha'aban 1447</Text>
+          <Text className="text-[#aaa] text-xs">28 Shaaban 1447</Text>
         </View>
 
         <TouchableOpacity>
