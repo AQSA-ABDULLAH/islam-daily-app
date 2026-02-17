@@ -1,4 +1,4 @@
-import { LocationContext } from "@/context/LocationContext";
+import { LocationContext } from "@/context/LocationProvider";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { CalculationMethod, Coordinates, PrayerTimes } from "adhan";
 import React, { useContext, useEffect, useState } from "react";

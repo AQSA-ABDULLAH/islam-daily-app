@@ -1,48 +1,55 @@
-import { LocationContext } from "@/context/LocationContext";
+// components/home/Header.tsx
+import { AppDispatch, RootState } from "@/store"; // make sure your store's RootState is exported
+import { fetchVisitor } from "@/store/features/visitorSlice";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import axios from "axios";
-import React, { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 
 const Header = () => {
-  const { location, city } = useContext(LocationContext);
+  const dispatch = useDispatch<AppDispatch>();
 
-  const [gregorianDate, setGregorianDate] = useState("");
-  const [hijriDate, setHijriDate] = useState("");
+  const visitorState = useSelector((state: RootState) => state.visitor);
+  const { data: visitorData } = visitorState;
 
-  // Gregorian date
+  const [gregorianDate, setGregorianDate] = useState<string>("");
+  const [hijriDate, setHijriDate] = useState<string>("");
+
+  // Fetch visitor on mount
+  useEffect(() => {
+    if (!visitorData) {
+      dispatch(fetchVisitor());
+    }
+  }, [dispatch, visitorData]);
+
+  // Set Gregorian date
   useEffect(() => {
     const today = new Date();
-
-    const formattedGregorian = today.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-
-    setGregorianDate(formattedGregorian);
+    setGregorianDate(
+      today.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+    );
   }, []);
 
-  // Hijri date (jab location available ho)
+  // Fetch Hijri date when coords available
   useEffect(() => {
-    if (!location) return;
+    if (!visitorData?.coords || !visitorData.coords.latitude) return;
 
-    axios
-      .get("https://api.aladhan.com/v1/timings", {
-        params: {
-          latitude: location.latitude,
-          longitude: location.longitude,
-          method: 4,
-        },
-      })
+    const { latitude, longitude } = visitorData.coords;
+
+    fetch(
+      `https://api.aladhan.com/v1/timings?latitude=${latitude}&longitude=${longitude}&method=4`,
+    )
+      .then((res) => res.json())
       .then((res) => {
-        const hijri = res.data.data.date.hijri;
+        const hijri = res.data.date.hijri;
         setHijriDate(`${hijri.day} ${hijri.month.en} ${hijri.year}`);
       })
-      .catch((err) => {
-        console.log("Hijri fetch error:", err);
-      });
-  }, [location]);
+      .catch((err) => console.error("Hijri fetch error:", err));
+  }, [visitorData]);
 
   return (
     <View className="flex-row justify-between items-center py-4 px-4">
@@ -52,12 +59,10 @@ const Header = () => {
           size={32}
           color="#1E293B"
         />
-
         <View className="ml-3">
           <Text className="text-gray-900 font-semibold text-[15px]">
             {hijriDate || "Loading..."}
           </Text>
-
           <Text className="text-gray-500 text-[13px]">{gregorianDate}</Text>
         </View>
       </View>
@@ -67,7 +72,7 @@ const Header = () => {
           className="text-gray-800 font-bold text-[11px] tracking-[1px] uppercase"
           numberOfLines={2}
         >
-          {city || "Detecting Location..."}
+          {visitorData?.cityName || "Detecting Location..."}
         </Text>
       </View>
     </View>
