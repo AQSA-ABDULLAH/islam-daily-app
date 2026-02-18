@@ -1,85 +1,88 @@
-import { LocationContext } from "@/context/LocationProvider";
+// components/prayer/PrayerStatus.tsx
+import { timeToMinutes } from "@/lib/helper"; // your helper to convert "HH:MM" to minutes
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { CalculationMethod, Coordinates, PrayerTimes } from "adhan";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import { useSelector } from "react-redux";
 
-const prayerOrder = ["fajr", "dhuhr", "asr", "maghrib", "isha"] as const;
-type PrayerName = (typeof prayerOrder)[number];
+const prayerOrder = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 
 const PrayerStatus: React.FC = () => {
-  const { location } = useContext(LocationContext);
+  const prayerData = useSelector((state: any) => state.prayer.data);
   const [currentPrayer, setCurrentPrayer] = useState<string>("");
   const [nextPrayer, setNextPrayer] = useState<string>("");
   const [nextPrayerTime, setNextPrayerTime] = useState<Date | null>(null);
-  const [countdown, setCountdown] = useState<string>("");
+  const [countdown, setCountdown] = useState<string>("--:--");
 
-  // Calculate prayer times whenever location changes
   useEffect(() => {
-    if (location) {
-      calculatePrayerTimes(location.latitude, location.longitude);
-    }
-  }, [location]);
+    if (!prayerData?.timings) return;
 
-  // Countdown timer
-  useEffect(() => {
-    let timer: number;
-    if (nextPrayerTime) {
-      timer = setInterval(() => {
-        const now = new Date();
-        const diff = nextPrayerTime.getTime() - now.getTime();
+    const interval = setInterval(() => {
+      const now = new Date();
+      const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
-        if (diff <= 0) {
-          setCountdown("00:00:00");
-        } else {
+      let foundCurrent = "Fajr";
+      let foundNext = "Fajr";
+      let nextTime: Date | null = null;
+
+      for (let i = 0; i < prayerOrder.length; i++) {
+        const prayerName = prayerOrder[i];
+        const timeStr = prayerData.timings[prayerName];
+        const prayerMinutes = timeToMinutes(timeStr);
+
+        if (nowMinutes < prayerMinutes) {
+          foundCurrent =
+            i === 0 ? prayerOrder[prayerOrder.length - 1] : prayerOrder[i - 1];
+
+          foundNext = prayerName;
+
+          const [hours, minutes] = timeStr.split(":").map(Number);
+          nextTime = new Date();
+          nextTime.setHours(hours, minutes, 0, 0);
+          break;
+        }
+
+        // After Isha → next is Fajr tomorrow
+        if (i === prayerOrder.length - 1) {
+          foundCurrent = "Isha";
+          foundNext = "Fajr";
+
+          const [hours, minutes] = prayerData.timings["Fajr"]
+            .split(":")
+            .map(Number);
+
+          nextTime = new Date();
+          nextTime.setDate(nextTime.getDate() + 1);
+          nextTime.setHours(hours, minutes, 0, 0);
+        }
+      }
+
+      setCurrentPrayer(foundCurrent);
+      setNextPrayer(foundNext);
+      setNextPrayerTime(nextTime);
+
+      // ✅ Countdown calculation FIXED
+      if (nextTime) {
+        const diff = nextTime.getTime() - now.getTime();
+
+        if (diff > 0) {
           const hours = Math.floor(diff / (1000 * 60 * 60));
-          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+          const minutes = Math.floor((diff / (1000 * 60)) % 60);
+          const seconds = Math.floor((diff / 1000) % 60);
 
           setCountdown(
-            `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
-              2,
-              "0",
-            )}:${String(seconds).padStart(2, "0")}`,
+            `${hours.toString().padStart(2, "0")}:${minutes
+              .toString()
+              .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`,
           );
+        } else {
+          setCountdown("00:00:00");
         }
-      }, 1000);
-    }
-
-    return () => clearInterval(timer);
-  }, [nextPrayerTime]);
-
-  const calculatePrayerTimes = (lat: number, lng: number) => {
-    const coords = new Coordinates(lat, lng);
-    const date = new Date();
-    const params = CalculationMethod.MuslimWorldLeague();
-    const times = new PrayerTimes(coords, date, params);
-
-    const now = new Date();
-    let current = "";
-    let next = "";
-    let nextTime: Date | null = null;
-
-    for (let i = 0; i < prayerOrder.length; i++) {
-      const prayerName: PrayerName = prayerOrder[i];
-      const prayerTime = times[prayerName];
-
-      if (now >= prayerTime && i < prayerOrder.length - 1) {
-        current = prayerName.toUpperCase();
-        next = prayerOrder[i + 1].toUpperCase();
-        nextTime = times[prayerOrder[i + 1]];
-      } else if (now < prayerTime) {
-        current = i === 0 ? "MIDNIGHT" : prayerOrder[i - 1].toUpperCase();
-        next = prayerName.toUpperCase();
-        nextTime = prayerTime;
-        break;
       }
-    }
+    }, 1000);
 
-    setCurrentPrayer(current);
-    setNextPrayer(next);
-    setNextPrayerTime(nextTime);
-  };
+    return () => clearInterval(interval);
+  }, [prayerData]);
 
   return (
     <View className="p-5 mb-6">

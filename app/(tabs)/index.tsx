@@ -4,14 +4,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 // import FeaturesGrid from "@/components/home/FeaturesGrid";
 import Header from "@/components/home/Header";
+import PrayerStatus from "@/components/home/PrayerStatus";
 
 export default function HomeScreen() {
   return (
     <SafeAreaView className="bg-white">
       <ScrollView showsVerticalScrollIndicator={false}>
         <Header />
-        {/* <PrayerStatus />
-        <FastingCard />
+        <PrayerStatus />
+        {/* <FastingCard />
         <PrayerTimeline />
         <DuaCard /> */}
       </ScrollView>
