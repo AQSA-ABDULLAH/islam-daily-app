@@ -1,3 +1,5 @@
+//app/_layout.js
+
 import VisitorUser from "@/components/startup/VisitorUser";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import store from "@/store/index";

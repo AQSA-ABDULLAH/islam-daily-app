@@ -1,33 +1,41 @@
+// store/features/prayerSlice.ts
+import { fetchPrayerTimes } from "@/lib/helper";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface PrayerState {
-  currentPrayer: string;
-  countdown: string;
-  times: Record<string, string>; // Fajr, Dhuhr, etc.
+  data: any;
+  status: "idle" | "loading" | "success" | "error";
 }
 
 const initialState: PrayerState = {
-  currentPrayer: "",
-  countdown: "00:00:00",
-  times: {},
+  data: null,
+  status: "idle",
 };
 
 const prayerSlice = createSlice({
   name: "prayer",
   initialState,
   reducers: {
-    setCurrentPrayer: (state, action: PayloadAction<string>) => {
-      state.currentPrayer = action.payload;
+    // load cached prayer data from AsyncStorage
+    loadPrayer(state, action: PayloadAction<any>) {
+      state.data = action.payload;
+      state.status = "success";
     },
-    setCountdown: (state, action: PayloadAction<string>) => {
-      state.countdown = action.payload;
-    },
-    setPrayerTimes: (state, action: PayloadAction<Record<string, string>>) => {
-      state.times = action.payload;
-    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchPrayerTimes.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchPrayerTimes.fulfilled, (state, action) => {
+        state.status = "success";
+        state.data = action.payload;
+      })
+      .addCase(fetchPrayerTimes.rejected, (state) => {
+        state.status = "error";
+      });
   },
 });
 
-export const { setCurrentPrayer, setCountdown, setPrayerTimes } =
-  prayerSlice.actions;
+export const { loadPrayer } = prayerSlice.actions;
 export default prayerSlice.reducer;
