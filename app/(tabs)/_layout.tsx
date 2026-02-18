@@ -5,10 +5,10 @@ import { HapticTab } from "@/components/haptic-tab";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
-import PrayerIcon from "../../assets/tabs/calendar-clock.svg";
-import DuaIcon from "../../assets/tabs/hand-helping.svg";
-// import HomeIcon from "../../assets/tabs/house.svg";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import PrayerIcon from "../../assets/tabs/calendar-clock.svg";
+import CompassIcon from "../../assets/tabs/compass.svg";
+import DuaIcon from "../../assets/tabs/hand-helping.svg";
 import SettingsIcon from "../../assets/tabs/settings.svg";
 
 export default function TabLayout() {
@@ -22,7 +22,7 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
       }}
     >
-      {/* <Tabs.Screen
+      <Tabs.Screen
         name="qiblah"
         options={{
           title: "Qiblah",
@@ -30,7 +30,7 @@ export default function TabLayout() {
             <CompassIcon width={28} height={28} fill={color} />
           ),
         }}
-      /> */}
+      />
 
       <Tabs.Screen
         name="prayer"
