@@ -72,7 +72,8 @@ const Header = () => {
           className="text-gray-800 font-bold text-[11px] tracking-[1px] uppercase"
           numberOfLines={2}
         >
-          {visitorData?.cityName || "Detecting Location..."}
+          {visitorData?.cityName || "Detecting Location..."},{" "}
+          {visitorData?.countryName}
         </Text>
       </View>
     </View>
