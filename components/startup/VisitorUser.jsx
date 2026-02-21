@@ -3,7 +3,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchPrayerTimes } from "../../store/features/prayerSlice";
+import { fetchPrayerTimes, fetchSehriIftarTimes } from "../../lib/helper";
 import { fetchVisitor, loadVisitor } from "../../store/features/visitorSlice";
 
 function VisitorUser({ setLoading }) {
@@ -70,6 +70,39 @@ function VisitorUser({ setLoading }) {
 
     fetchPrayerForVisitor();
   }, [visitorStatus, visitorData, dispatch, setLoading]);
+
+  useEffect(() => {
+    const fetchSehriIftarForVisitor = async () => {
+      if (visitorStatus === "success" && visitorData) {
+        const latitude = visitorData.latitude ?? visitorData.coords?.latitude;
+        const longitude =
+          visitorData.longitude ?? visitorData.coords?.longitude;
+
+        if (!latitude || !longitude) return;
+
+        const cachedSehriIftar = await AsyncStorage.getItem("sehri_iftar_data");
+        if (cachedSehriIftar) {
+          dispatch({
+            type: "sehriIftar/fetchTimes/fulfilled",
+            payload: JSON.parse(cachedSehriIftar),
+          });
+          return;
+        }
+
+        const resultAction = await dispatch(
+          fetchSehriIftarTimes({ latitude, longitude }),
+        );
+        if (fetchSehriIftarTimes.fulfilled.match(resultAction)) {
+          await AsyncStorage.setItem(
+            "sehri_iftar_data",
+            JSON.stringify(resultAction.payload),
+          );
+        }
+      }
+    };
+
+    fetchSehriIftarForVisitor();
+  }, [visitorStatus, visitorData, dispatch]);
 
   return null;
 }
