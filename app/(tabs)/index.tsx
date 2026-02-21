@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import FastingCard from "@/components/home/FastingCard";
 import Header from "@/components/home/Header";
 import PrayerStatus from "@/components/home/PrayerStatus";
+import PrayerTimeline from "@/components/home/PrayerTimeline";
 
 export default function HomeScreen() {
   return (
@@ -14,8 +15,8 @@ export default function HomeScreen() {
         <Header />
         <PrayerStatus />
         <FastingCard />
-        {/* <PrayerTimeline />
-        <DuaCard /> */}
+        <PrayerTimeline />
+        {/*  <DuaCard /> */}
       </ScrollView>
     </SafeAreaView>
   );

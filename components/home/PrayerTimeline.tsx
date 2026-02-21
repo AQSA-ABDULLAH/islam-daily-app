@@ -1,107 +1,66 @@
-import { timeToMinutes, to12HourFormat } from "@/context/helper";
-import { LocationContext } from "@/context/LocationContext";
-import axios from "axios";
-import React, { useContext, useEffect, useState } from "react";
+import { timeToMinutes, to12HourFormat } from "@/lib/helper";
+import React, { useMemo } from "react";
 import { Text, View } from "react-native";
+import { useSelector } from "react-redux";
 
-// Type for a single prayer
 interface Prayer {
   name: string;
   time: string;
   isActive?: boolean;
 }
 
-// Typing the API response from Aladhan
-interface TimingsResponse {
-  data: {
-    timings: {
-      Fajr: string;
-      Dhuhr: string;
-      Asr: string;
-      Maghrib: string;
-      Isha: string;
-    };
-  };
-}
+const prayerOrder = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 
 const PrayerTimeline: React.FC = () => {
-  const { location } = useContext(LocationContext);
-  const [prayers, setPrayers] = useState<Prayer[]>([]);
+  // Fetch all prayer times from Redux
+  const prayerData = useSelector((state: any) => state.prayer.data?.timings);
 
-  useEffect(() => {
-    if (!location) return;
+  const prayers: Prayer[] = useMemo(() => {
+    if (!prayerData) return [];
 
-    const fetchPrayerTimes = async () => {
-      try {
-        const response = await axios.get<TimingsResponse>(
-          "https://api.aladhan.com/v1/timings",
-          {
-            params: {
-              latitude: location.latitude,
-              longitude: location.longitude,
-              method: 4, // Pakistan calculation method
-            },
-          },
-        );
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-        const { timings } = response.data.data;
+    // Build array of prayers
+    const todayPrayers: Prayer[] = prayerOrder.map((name) => ({
+      name,
+      time: prayerData[name] ?? "00:00",
+    }));
 
-        // Create array of prayers
-        const todayPrayers: Prayer[] = [
-          { name: "Fajr", time: timings.Fajr },
-          { name: "Dhuhr", time: timings.Dhuhr },
-          { name: "Asr", time: timings.Asr },
-          { name: "Maghrib", time: timings.Maghrib },
-          { name: "Isha", time: timings.Isha },
-        ];
+    // Determine which prayer is active
+    const nextPrayerIndex = todayPrayers.findIndex((pr) => {
+      return timeToMinutes(pr.time) > currentMinutes;
+    });
 
-        const now = new Date();
-        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    return todayPrayers.map((p, i) => ({
+      ...p,
+      isActive:
+        i ===
+        (nextPrayerIndex === -1
+          ? todayPrayers.length - 1
+          : nextPrayerIndex - 1),
+      time: to12HourFormat(p.time),
+    }));
+  }, [prayerData]);
 
-        // Determine active prayer and format time
-        const updatedPrayers = todayPrayers.map((p, i) => {
-          // const prayerMinutes = timeToMinutes(p.time.split(" ")[0]);
-
-          const nextPrayerIndex = todayPrayers.findIndex((pr) => {
-            const prMinutes = timeToMinutes(pr.time.split(" ")[0]);
-            return prMinutes > currentMinutes;
-          });
-
-          const isActive =
-            i ===
-            (nextPrayerIndex === -1
-              ? todayPrayers.length - 1
-              : nextPrayerIndex - 1);
-
-          return {
-            ...p,
-            isActive,
-            time: to12HourFormat(p.time.split(" ")[0]),
-          };
-        });
-
-        setPrayers(updatedPrayers);
-      } catch (error) {
-        console.log("Prayer fetch error:", error);
-      }
-    };
-
-    fetchPrayerTimes();
-  }, [location]);
+  if (!prayers.length) {
+    return (
+      <View className="bg-white py-4 border-b border-gray-100 items-center">
+        <Text className="text-gray-500">Loading prayer times...</Text>
+      </View>
+    );
+  }
 
   return (
     <View className="bg-white py-4 border-b border-gray-100">
       <View className="flex-row justify-between px-2">
         {prayers.map((item, index) => (
           <View key={index} className="items-center flex-1">
-            {/* Dot indicator */}
             <View
               className={`h-2.5 w-2.5 rounded-full mb-2 ${
                 item.isActive ? "bg-[#006684]" : "bg-gray-300"
               }`}
             />
-
-            {/* Prayer name */}
             <Text
               className={`text-[12px] mb-0.5 ${
                 item.isActive
@@ -111,8 +70,6 @@ const PrayerTimeline: React.FC = () => {
             >
               {item.name}
             </Text>
-
-            {/* Prayer time */}
             <Text
               className={`text-[10px] ${
                 item.isActive ? "font-bold text-black" : "text-gray-500"
