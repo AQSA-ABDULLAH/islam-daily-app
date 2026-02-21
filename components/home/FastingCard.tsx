@@ -1,3 +1,4 @@
+import { to12HourFormat } from "@/lib/helper"; // import your helper
 import type { RootState } from "@/store";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
@@ -5,8 +6,14 @@ import { Text, View } from "react-native";
 import { useSelector } from "react-redux";
 
 const FastingCard = () => {
-  // Tell TS the type of the state
   const sehriIftar = useSelector((state: RootState) => state.sehriIftar.data);
+
+  const sehriFormatted = sehriIftar?.sehri
+    ? to12HourFormat(sehriIftar.sehri)
+    : "--:--";
+  const iftarFormatted = sehriIftar?.iftar
+    ? to12HourFormat(sehriIftar.iftar)
+    : "--:--";
 
   return (
     <View className="bg-[#F8F9FA] border border-gray-100 rounded-2xl p-4 flex-row justify-between items-center mb-6">
@@ -25,8 +32,7 @@ const FastingCard = () => {
             color="#4B5563"
           />
           <Text className="ml-1 text-gray-700 text-xs font-semibold">
-            Sehri:{" "}
-            <Text className="font-bold">{sehriIftar?.sehri ?? "--:--"}</Text>
+            Sehri: <Text className="font-bold">{sehriFormatted}</Text>
           </Text>
         </View>
 
@@ -38,8 +44,7 @@ const FastingCard = () => {
             color="#4B5563"
           />
           <Text className="ml-1 text-gray-700 text-xs font-semibold">
-            Iftar:{" "}
-            <Text className="font-bold">{sehriIftar?.iftar ?? "--:--"}</Text>
+            Iftar: <Text className="font-bold">{iftarFormatted}</Text>
           </Text>
         </View>
       </View>

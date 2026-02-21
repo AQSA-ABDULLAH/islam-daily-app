@@ -1,5 +1,5 @@
 // components/prayer/PrayerStatus.tsx
-import { timeToMinutes } from "@/lib/helper"; // your helper to convert "HH:MM" to minutes
+import { timeToMinutes, to12HourFormat } from "@/lib/helper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
@@ -9,21 +9,24 @@ const prayerOrder = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
 
 const PrayerStatus: React.FC = () => {
   const prayerData = useSelector((state: any) => state.prayer.data);
-  const [currentPrayer, setCurrentPrayer] = useState<string>("");
-  const [nextPrayer, setNextPrayer] = useState<string>("");
-  const [nextPrayerTime, setNextPrayerTime] = useState<Date | null>(null);
-  const [countdown, setCountdown] = useState<string>("--:--");
+
+  const [currentPrayer, setCurrentPrayer] = useState<string>("--");
+  const [currentPrayerTime, setCurrentPrayerTime] = useState<string>("--:--");
+  const [nextPrayer, setNextPrayer] = useState<string>("--");
+  const [nextPrayerTime, setNextPrayerTime] = useState<string>("--:--");
+  const [countdown, setCountdown] = useState<string>("--:--:--");
 
   useEffect(() => {
     if (!prayerData?.timings) return;
 
-    const interval = setInterval(() => {
+    const updatePrayers = () => {
       const now = new Date();
       const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
       let foundCurrent = "Fajr";
       let foundNext = "Fajr";
       let nextTime: Date | null = null;
+      let currentTimeStr = prayerData.timings["Fajr"];
 
       for (let i = 0; i < prayerOrder.length; i++) {
         const prayerName = prayerOrder[i];
@@ -33,8 +36,8 @@ const PrayerStatus: React.FC = () => {
         if (nowMinutes < prayerMinutes) {
           foundCurrent =
             i === 0 ? prayerOrder[prayerOrder.length - 1] : prayerOrder[i - 1];
-
           foundNext = prayerName;
+          currentTimeStr = prayerData.timings[foundCurrent];
 
           const [hours, minutes] = timeStr.split(":").map(Number);
           nextTime = new Date();
@@ -46,40 +49,47 @@ const PrayerStatus: React.FC = () => {
         if (i === prayerOrder.length - 1) {
           foundCurrent = "Isha";
           foundNext = "Fajr";
+          currentTimeStr = prayerData.timings["Isha"];
 
           const [hours, minutes] = prayerData.timings["Fajr"]
             .split(":")
             .map(Number);
-
           nextTime = new Date();
           nextTime.setDate(nextTime.getDate() + 1);
           nextTime.setHours(hours, minutes, 0, 0);
         }
       }
 
+      // Update current and next prayers
       setCurrentPrayer(foundCurrent);
+      setCurrentPrayerTime(to12HourFormat(currentTimeStr));
+
       setNextPrayer(foundNext);
-      setNextPrayerTime(nextTime);
-
-      // ✅ Countdown calculation FIXED
       if (nextTime) {
-        const diff = nextTime.getTime() - now.getTime();
+        const hours = nextTime.getHours().toString().padStart(2, "0");
+        const minutes = nextTime.getMinutes().toString().padStart(2, "0");
+        setNextPrayerTime(to12HourFormat(`${hours}:${minutes}`));
 
+        // Countdown calculation
+        const diff = nextTime.getTime() - now.getTime();
         if (diff > 0) {
-          const hours = Math.floor(diff / (1000 * 60 * 60));
-          const minutes = Math.floor((diff / (1000 * 60)) % 60);
-          const seconds = Math.floor((diff / 1000) % 60);
+          const h = Math.floor(diff / (1000 * 60 * 60));
+          const m = Math.floor((diff / (1000 * 60)) % 60);
+          const s = Math.floor((diff / 1000) % 60);
 
           setCountdown(
-            `${hours.toString().padStart(2, "0")}:${minutes
+            `${h.toString().padStart(2, "0")}:${m
               .toString()
-              .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`,
+              .padStart(2, "0")}:${s.toString().padStart(2, "0")}`,
           );
         } else {
           setCountdown("00:00:00");
         }
       }
-    }, 1000);
+    };
+
+    updatePrayers();
+    const interval = setInterval(updatePrayers, 1000);
 
     return () => clearInterval(interval);
   }, [prayerData]);
@@ -87,6 +97,7 @@ const PrayerStatus: React.FC = () => {
   return (
     <View className="p-5 mb-6">
       <View className="flex-row justify-between items-center">
+        {/* Left Section */}
         <View className="flex-1">
           <View className="bg-slate-900 p-2 rounded-md self-start mb-4">
             <MaterialCommunityIcons
@@ -97,6 +108,7 @@ const PrayerStatus: React.FC = () => {
           </View>
 
           <View className="flex-row items-center">
+            {/* Current Prayer */}
             <View>
               <Text className="text-gray-400 text-[10px] uppercase font-bold">
                 Now
@@ -113,12 +125,10 @@ const PrayerStatus: React.FC = () => {
               style={{ marginHorizontal: 16 }}
             />
 
+            {/* Next Prayer */}
             <View>
               <Text className="text-gray-800 font-bold text-sm">
-                {nextPrayerTime?.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+                {nextPrayerTime}
               </Text>
               <Text className="text-xl font-black text-black">
                 {nextPrayer}
@@ -127,6 +137,7 @@ const PrayerStatus: React.FC = () => {
           </View>
         </View>
 
+        {/* Right Section */}
         <View className="items-center justify-center">
           <TouchableOpacity className="bg-[#1E293B] px-4 py-1.5 rounded-lg mb-4">
             <Text className="text-white text-[10px] font-bold tracking-tight">
